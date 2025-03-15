@@ -2,9 +2,13 @@ from flask import Flask, request, jsonify
 from mistralai.client import MistralClient
 from mistralai.models.chat_completion import ChatMessage
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Load API key securely
-MISTRAL_API_KEY = "IsYdclTGaW9rysPzhzhpdEcBhBMN8Ajb"  # Ensure this is set in your environment
+#MISTRAL_API_KEY = "IsYdclTGaW9rysPzhzhpdEcBhBMN8Ajb"  # Ensure this is set in your environment
+MISTRAL_API_KEY=os.getenv("MISTRAL_API_KEY")
 #client = MistralClient(api_key=MISTRAL_API_KEY)
 if not MISTRAL_API_KEY:
     raise ValueError("Error: MISTRAL_API_KEY is missing. Set it as an environment variable.")
