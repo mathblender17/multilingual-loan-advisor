@@ -9,13 +9,14 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+# API Configuration
+SARVAM_API_KEY = os.getenv('SARVAM_API_KEY', "44e5ae09-d0e2-4525-9e16-bda924398004")  # Fallback to default key
+API_URL = "https://api.sarvam.ai/speech-to-text"
+
 class SpeechToText:
     def __init__(self):
-        self.api_url = "https://api.sarvam.ai/speech-to-text"
-        self.api_key = os.getenv('SARVAM_API_KEY')
-        
-        if not self.api_key:
-            raise ValueError("API key not found. Please set SARVAM_API_KEY in .env file")
+        self.api_url = API_URL
+        self.api_key = SARVAM_API_KEY
 
     def list_audio_devices(self):
         """List all available audio input devices"""
@@ -152,7 +153,11 @@ class SpeechToText:
 
 def main():
     """Test the Speech-to-Text functionality"""
-    stt = SpeechToText()
+    try:
+        stt = SpeechToText()
+    except ValueError as e:
+        print(f"Error: {e}")
+        return
     
     while True:
         print("\n=== Speech-to-Text Demo ===")
