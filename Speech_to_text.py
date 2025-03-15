@@ -1,5 +1,3 @@
-# speech_to_text.py
-
 import requests
 import sounddevice as sd
 import wave
@@ -8,6 +6,7 @@ import os
 import time
 from dotenv import load_dotenv
 
+# Load environment variables
 load_dotenv()
 
 class SpeechToText:
@@ -16,50 +15,53 @@ class SpeechToText:
         self.api_key = os.getenv('SARVAM_API_KEY')
         
         if not self.api_key:
-            raise ValueError("API key not found.
-            
-class SpeechToText:
-    def __init__(self):
-        self.api_url = "https://api.sarvam.ai/speech-to-text"
-        self.api_key = "44e5ae09-d0e2-4525-9e16-bda924398004"
+            raise ValueError("API key not found. Please set SARVAM_API_KEY in .env file")
 
     def list_audio_devices(self):
-        """List all available audio devices"""
-        print("\nAvailable audio devices:")
+        """List all available audio input devices"""
+        print("\nAvailable audio input devices:")
         devices = sd.query_devices()
+        input_devices = []
         for i, device in enumerate(devices):
-            print(f"{i}: {device['name']} (inputs: {device['max_input_channels']})")
+            if device['max_input_channels'] > 0:  # Only show input devices
+                print(f"{i}: {device['name']} (inputs: {device['max_input_channels']})")
+                input_devices.append(i)
+        return input_devices
 
-    def setup_audio_device(self):
-        """Setup audio device for recording"""
+    def get_default_device(self):
+        """Get the default input device"""
         try:
-            # List devices
-            self.list_audio_devices()
-            
-            # Let user select device
-            device_id = input("\nSelect input device number (or press Enter for default): ").strip()
-            
-            if device_id:
-                device_info = sd.query_devices(int(device_id), 'input')
-                print(f"Using device: {device_info['name']}")
-                sd.default.device[0] = int(device_id)
-            
-            # Test device
-            print("\nTesting audio device...")
-            with sd.InputStream(channels=1, callback=lambda *args: None):
-                time.sleep(0.1)
-            print("Audio device test successful!")
-            return True
-            
-        except Exception as e:
-            print(f"Error setting up audio device: {e}")
-            return False
+            device = sd.query_devices(kind='input')
+            return device['index']
+        except:
+            return None
 
-    def record_audio(self, duration=5, sample_rate=16000):
-        """Record audio from microphone"""
+    def record_audio(self, duration=5, sample_rate=16000, device=None):
+        """Record audio from selected device"""
         try:
-            # Setup device first
-            if not self.setup_audio_device():
+            # If no device specified, show available devices and let user choose
+            if device is None:
+                input_devices = self.list_audio_devices()
+                if not input_devices:
+                    print("No input devices found!")
+                    return None
+                
+                default_device = self.get_default_device()
+                if default_device is not None:
+                    print(f"\nDefault input device: {default_device}")
+                
+                device_choice = input("\nSelect input device number (or press Enter for default): ").strip()
+                if device_choice:
+                    device = int(device_choice)
+                else:
+                    device = default_device
+
+            # Test device before recording
+            try:
+                sd.check_input_settings(device=device, channels=1, samplerate=sample_rate)
+                print(f"\nUsing device: {sd.query_devices(device)['name']}")
+            except Exception as e:
+                print(f"Error with selected device: {e}")
                 return None
 
             print("\nRecording will start in 3 seconds...")
@@ -75,6 +77,7 @@ class SpeechToText:
                 samplerate=sample_rate,
                 channels=1,
                 dtype='int16',
+                device=device,
                 blocking=True
             )
             
@@ -83,10 +86,9 @@ class SpeechToText:
             # Save recording
             output_path = "recorded_audio.wav"
             
-            # Save as WAV file
             with wave.open(output_path, 'wb') as wf:
                 wf.setnchannels(1)
-                wf.setsampwidth(2)
+                wf.setsampwidth(2)  # 16-bit audio
                 wf.setframerate(sample_rate)
                 wf.writeframes(recording.tobytes())
                 
@@ -94,11 +96,12 @@ class SpeechToText:
             return output_path
             
         except Exception as e:
-            print(f"❌ Error recording audio: {e}")
+            print(f"\n❌ Error recording audio: {e}")
             print("\nTroubleshooting tips:")
-            print("1. Make sure your microphone is connected and working")
-            print("2. Grant microphone permissions to your terminal/IDE")
-            print("3. Try selecting a different input device")
+            print("1. Make sure you have a working microphone connected")
+            print("2. Try selecting a different input device")
+            print("3. Check if your microphone is being used by another application")
+            print("4. Verify your system recognizes the microphone")
             return None
 
     def transcribe_audio(self, audio_file_path, language_code="hi-IN"):
@@ -132,8 +135,6 @@ class SpeechToText:
                     data=data,
                     files=files
                 )
-                
-                print(f"Response status: {response.status_code}")
                 
                 if response.status_code == 200:
                     result = response.json()
