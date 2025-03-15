@@ -6,7 +6,18 @@ import wave
 import numpy as np
 import os
 import time
+from dotenv import load_dotenv
 
+load_dotenv()
+
+class SpeechToText:
+    def __init__(self):
+        self.api_url = "https://api.sarvam.ai/speech-to-text"
+        self.api_key = os.getenv('SARVAM_API_KEY')
+        
+        if not self.api_key:
+            raise ValueError("API key not found.
+            
 class SpeechToText:
     def __init__(self):
         self.api_url = "https://api.sarvam.ai/speech-to-text"
