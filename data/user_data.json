@@ -1,0 +1,17 @@
+{
+    "latest": {
+        "loan_type": "vehicle",
+        "student_name": "adadrsh",
+        "course_name": "btech",
+        "college_name": "Srm",
+        "course_fee": 4.0,
+        "parent_details": "what is the process to apply",
+        "step": 6,
+        "applicant_name": "adarsh",
+        "vehicle_type": "car",
+        "vehicle_cost": "1500000",
+        "down_payment": "400000",
+        "income": "120000",
+        "employment_details": "1"
+    }
+}
