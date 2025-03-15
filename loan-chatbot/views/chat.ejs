@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoanBot Chat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #64ffda;
+            --bg-dark: #000000;
+            --bg-light: #ffffff;
+            --text-dark: #333333;
+            --text-light: #ffffff;
+            --user-message-bg: #2196f3;
+            --bot-message-bg: #424242;
+            --quick-reply-bg: rgba(100, 255, 218, 0.1);
+            --sidebar-width: 300px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body.light-theme {
+            --bg-dark: #ffffff;
+            --text-light: #333333;
+            --bot-message-bg: #e0e0e0;
+            --quick-reply-bg: rgba(33, 150, 243, 0.1);
+        }
+
+        .header {
+            background: rgba(10, 10, 10, 0.8);
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, #64ffda, #000000);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo i {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            z-index: 2;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(100, 255, 218, 0.1);
+        }
+
+        .main-container {
+            display: flex;
+            height: 100vh;
+            padding-top: 60px;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background: rgba(10, 10, 10, 0.95);
+            border-right: 1px solid rgba(100, 255, 218, 0.1);
+            height: 100%;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .chat-history {
+            margin-bottom: 2rem;
+        }
+
+        .history-title {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .history-item {
+            padding: 0.8rem;
+            margin-bottom: 0.5rem;
+            background: rgba(100, 255, 218, 0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .history-item:hover {
+            background: rgba(100, 255, 218, 0.1);
+            transform: translateX(5px);
+        }
+
+        .history-item .date {
+            font-size: 0.8rem;
+            color: #8892b0;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .option-boxes {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .option-box {
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid rgba(100, 255, 218, 0.2);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .option-box:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+            box-shadow: 0 5px 15px rgba(100, 255, 218, 0.1);
+        }
+
+        .option-box i {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .option-box h3 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .option-box p {
+            color: #8892b0;
+            font-size: 0.9rem;
+        }
+
+        .chat-interface {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            position: relative;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .input-container {
+            background: rgba(10, 10, 10, 0.8);
+            padding: 1rem;
+            border-radius: 15px;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .input-options {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-option {
+            background: rgba(100, 255, 218, 0.1);
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .input-option:hover {
+            background: rgba(100, 255, 218, 0.2);
+        }
+
+        .input-option.active {
+            background: var(--primary-color);
+            color: var(--bg-dark);
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .input-box {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(100, 255, 218, 0.2);
+            border-radius: 25px;
+            padding: 0.8rem;
+            color: var(--text-light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-box:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px rgba(100, 255, 218, 0.2);
+        }
+
+        .action-btn {
+            background: transparent;
+            border: none;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .action-btn:hover {
+            background: rgba(100, 255, 218, 0.1);
+            transform: scale(1.1);
+        }
+
+        .action-btn.recording {
+            animation: pulse 1s infinite;
+            color: #ff4444;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 1rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .message.user-message {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 1rem;
+            border-radius: 15px;
+            position: relative;
+        }
+
+        .user-message .message-content {
+            background: var(--user-message-bg);
+            border-bottom-right-radius: 5px;
+        }
+
+        .bot-message .message-content {
+            background: var(--bot-message-bg);
+            border-bottom-left-radius: 5px;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 250px;
+            }
+
+            .option-boxes {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 200px;
+            }
+
+            .option-boxes {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header" style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(10, 10, 10, 0.95); padding: 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(100, 255, 218, 0.1);">
+        <div class="logo-container">
+            <div class="logo">
+                <i class="fas fa-robot"></i>
+            </div>
+            <span class="logo-text">LoanBot</span>
+        </div>
+        <button class="theme-toggle">
+            <i class="fas fa-moon"></i>
+            <span>Theme</span>
+        </button>
+    </header>
+
+    <div class="main-container">
+        <aside class="sidebar">
+            <div class="chat-history">
+                <h2 class="history-title">Chat History</h2>
+                <div class="history-item">
+                    <div class="date">Today, 2:30 PM</div>
+                    <div>Loan Eligibility Check</div>
+                </div>
+                <div class="history-item">
+                    <div class="date">Yesterday, 4:15 PM</div>
+                    <div>Financial Advisory</div>
+                </div>
+                <div class="history-item">
+                    <div class="date">Mar 15, 11:20 AM</div>
+                    <div>Loan Application</div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="option-boxes">
+                <div class="option-box">
+                    <i class="fas fa-calculator"></i>
+                    <h3>Loan Calculator</h3>
+                    <p>Calculate EMI and explore loan options</p>
+                </div>
+                <div class="option-box">
+                    <i class="fas fa-check-circle"></i>
+                    <h3>Eligibility Check</h3>
+                    <p>Check your loan eligibility instantly</p>
+                </div>
+                <div class="option-box">
+                    <i class="fas fa-file-alt"></i>
+                    <h3>Apply Now</h3>
+                    <p>Start your loan application</p>
+                </div>
+            </div>
+
+            <div class="chat-interface">
+                <div class="chat-messages">
+                    <div class="message bot-message">
+                        <div class="message-content">
+                            Hello! I'm your loan assistant. How can I help you today?
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-container">
+                    <div class="input-options">
+                        <button class="input-option active">
+                            <i class="fas fa-keyboard"></i>
+                            Text to Text
+                        </button>
+                        <button class="input-option">
+                            <i class="fas fa-microphone"></i>
+                            Speech to Text
+                        </button>
+                        <button class="input-option">
+                            <i class="fas fa-volume-up"></i>
+                            Text to Speech
+                        </button>
+                    </div>
+                    <div class="input-wrapper">
+                        <button class="action-btn voice-btn">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <input type="text" class="input-box" placeholder="Type your message...">
+                        <button class="action-btn send-btn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.querySelector('.theme-toggle');
+        const themeIcon = themeToggle.querySelector('i');
+        
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('light-theme');
+            themeIcon.classList.toggle('fa-moon');
+            themeIcon.classList.toggle('fa-sun');
+        });
+
+        // Input options functionality
+        const inputOptions = document.querySelectorAll('.input-option');
+        inputOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                inputOptions.forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+            });
+        });
+
+        // Voice input functionality
+        const voiceBtn = document.querySelector('.voice-btn');
+        const voiceIcon = voiceBtn.querySelector('i');
+        let isRecording = false;
+
+        voiceBtn.addEventListener('click', () => {
+            isRecording = !isRecording;
+            voiceBtn.classList.toggle('recording');
+            voiceIcon.classList.toggle('fa-microphone');
+            voiceIcon.classList.toggle('fa-stop');
+        });
+
+        // Message sending functionality
+        const chatMessages = document.querySelector('.chat-messages');
+        const inputBox = document.querySelector('.input-box');
+        const sendBtn = document.querySelector('.send-btn');
+
+        function addMessage(message, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            messageDiv.innerHTML = `
+                <div class="message-content">
+                    ${message}
+                </div>
+            `;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function sendMessage() {
+            const message = inputBox.value.trim();
+            if (message) {
+                addMessage(message, true);
+                inputBox.value = '';
+                
+                // Simulate bot response
+                setTimeout(() => {
+                    addMessage('Thank you for your message. I\'m processing your request.');
+                }, 1000);
+            }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        inputBox.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Option boxes functionality
+        const optionBoxes = document.querySelectorAll('.option-box');
+        optionBoxes.forEach(box => {
+            box.addEventListener('click', () => {
+                const title = box.querySelector('h3').textContent;
+                addMessage(`I'd like to know more about ${title}`, true);
+                setTimeout(() => {
+                    addMessage(`I'll help you with ${title.toLowerCase()}. What specific information would you like to know?`);
+                }, 1000);
+            });
+        });
+    </script>
+</body>
+</html> 

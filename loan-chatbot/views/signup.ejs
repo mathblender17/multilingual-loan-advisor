@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - LoanBot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            background: #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: rgba(100, 255, 218, 0.1);
+            z-index: 3;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: #64ffda;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px #64ffda;
+        }
+
+        .auth-container {
+            background: rgba(10, 10, 10, 0.8);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+            z-index: 2;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, #64ffda, #000000);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo::before {
+            content: '';
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            background: conic-gradient(from 0deg, transparent 0deg, #64ffda 360deg);
+            animation: rotate 2s linear infinite;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            inset: 3px;
+            background: #000000;
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .logo i {
+            font-size: 2rem;
+            color: #64ffda;
+            z-index: 2;
+        }
+
+        h2 {
+            color: #64ffda;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            font-size: 1.8rem;
+            text-shadow: 0 0 10px rgba(100, 255, 218, 0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #8892b0;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #64ffda;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem;
+            background: rgba(10, 10, 10, 0.8);
+            border: 2px solid rgba(100, 255, 218, 0.2);
+            border-radius: 8px;
+            font-size: 1rem;
+            color: #ccd6f6;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            border-color: #64ffda;
+            box-shadow: 0 0 10px rgba(100, 255, 218, 0.2);
+            outline: none;
+        }
+
+        .form-group .strength-meter {
+            height: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            margin-top: 8px;
+            border-radius: 2px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .form-group .strength-meter div {
+            height: 100%;
+            width: 0;
+            transition: all 0.3s ease;
+        }
+
+        .strength-weak { background: #ff6b6b; }
+        .strength-medium { background: #ffd93d; }
+        .strength-strong { background: #64ffda; }
+
+        .error-message {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            border: 1px solid rgba(255, 107, 107, 0.4);
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .auth-button {
+            width: 100%;
+            padding: 1rem;
+            background: transparent;
+            color: #64ffda;
+            border: 2px solid #64ffda;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            background: rgba(100, 255, 218, 0.1);
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.5s ease;
+            border-radius: 8px;
+        }
+
+        .auth-button:hover::before {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .auth-button:hover {
+            box-shadow: 0 0 20px rgba(100, 255, 218, 0.2);
+        }
+
+        .auth-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #8892b0;
+        }
+
+        .auth-link a {
+            color: #64ffda;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .auth-link a:hover {
+            text-shadow: 0 0 10px rgba(100, 255, 218, 0.5);
+        }
+
+        .requirements {
+            color: #8892b0;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            padding-left: 1rem;
+        }
+
+        .requirements li {
+            margin: 0.25rem 0;
+            transition: color 0.3s ease;
+        }
+
+        .requirements li.met {
+            color: #64ffda;
+        }
+
+        .requirements li i {
+            margin-right: 0.5rem;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-fill"></div>
+    </div>
+    <canvas id="particle-canvas"></canvas>
+    <div class="auth-container">
+        <div class="logo-container">
+            <div class="logo">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h2>Create Account</h2>
+            <p class="subtitle">Join LoanBot for personalized loan assistance</p>
+        </div>
+
+        <% if (error) { %>
+            <div class="error-message"><%= error %></div>
+        <% } %>
+
+        <form action="/signup" method="POST" id="signup-form">
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+                <div class="strength-meter">
+                    <div></div>
+                </div>
+                <ul class="requirements">
+                    <li><i class="fas fa-circle"></i>At least 8 characters</li>
+                    <li><i class="fas fa-circle"></i>Contains uppercase letter</li>
+                    <li><i class="fas fa-circle"></i>Contains number</li>
+                    <li><i class="fas fa-circle"></i>Contains special character</li>
+                </ul>
+            </div>
+            <div class="form-group">
+                <label for="confirm-password">Confirm Password</label>
+                <input type="password" id="confirm-password" name="confirm-password" required>
+            </div>
+            <button type="submit" class="auth-button">Create Account</button>
+        </form>
+        <p class="auth-link">Already have an account? <a href="/login">Login</a></p>
+    </div>
+
+    <script>
+        // Particle System
+        class Particle {
+            constructor(canvas, x, y) {
+                this.canvas = canvas;
+                this.x = x || Math.random() * canvas.width;
+                this.y = y || Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 1;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.speedY = (Math.random() - 0.5) * 0.5;
+                this.maxSpeed = 2;
+                this.originalSpeedX = this.speedX;
+                this.originalSpeedY = this.speedY;
+                this.targetX = null;
+                this.targetY = null;
+            }
+
+            update() {
+                if (this.targetX !== null && this.targetY !== null) {
+                    const dx = this.targetX - this.x;
+                    const dy = this.targetY - this.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance > 1) {
+                        this.speedX = (dx / distance) * this.maxSpeed;
+                        this.speedY = (dy / distance) * this.maxSpeed;
+                    } else {
+                        this.targetX = null;
+                        this.targetY = null;
+                        this.speedX = this.originalSpeedX;
+                        this.speedY = this.originalSpeedY;
+                    }
+                }
+
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x < 0 || this.x > this.canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > this.canvas.height) this.speedY *= -1;
+            }
+
+            draw(ctx) {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = '#64ffda';
+                ctx.fill();
+            }
+
+            setTarget(x, y) {
+                this.targetX = x;
+                this.targetY = y;
+            }
+        }
+
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        const particleCount = 100;
+        let animationId;
+
+        function setCanvasSize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function init() {
+            setCanvasSize();
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle(canvas));
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw(ctx);
+            });
+
+            particles.forEach((particle1, i) => {
+                particles.slice(i + 1).forEach(particle2 => {
+                    const dx = particle1.x - particle2.x;
+                    const dy = particle1.y - particle2.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 100) {
+                        ctx.beginPath();
+                        ctx.moveTo(particle1.x, particle1.y);
+                        ctx.lineTo(particle2.x, particle2.y);
+                        ctx.strokeStyle = `rgba(100, 255, 218, ${0.5 * (1 - distance/100)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                });
+            });
+
+            animationId = requestAnimationFrame(animate);
+        }
+
+        init();
+        animate();
+
+        window.addEventListener('resize', () => {
+            cancelAnimationFrame(animationId);
+            init();
+            animate();
+        });
+
+        // Form interaction effects
+        const form = document.getElementById('signup-form');
+        const progressBar = document.querySelector('.progress-fill');
+        const inputs = form.querySelectorAll('input');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirm-password');
+        const requirements = document.querySelectorAll('.requirements li');
+        const strengthMeter = document.querySelector('.strength-meter div');
+
+        function updateProgress() {
+            const totalFields = inputs.length;
+            let filledFields = 0;
+
+            inputs.forEach(input => {
+                if (input.value.trim() !== '') filledFields++;
+            });
+
+            const progress = (filledFields / totalFields) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            // Attract particles to form based on progress
+            const formRect = form.getBoundingClientRect();
+            const centerX = formRect.left + formRect.width / 2;
+            const centerY = formRect.top + formRect.height / 2;
+            const radius = Math.min(formRect.width, formRect.height) * (progress / 100);
+
+            particles.forEach((particle, index) => {
+                const angle = (index / particles.length) * Math.PI * 2;
+                const targetX = centerX + Math.cos(angle) * radius;
+                const targetY = centerY + Math.sin(angle) * radius;
+                
+                if (progress > 0) {
+                    particle.setTarget(targetX, targetY);
+                }
+            });
+        }
+
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            const checks = [
+                password.length >= 8,
+                /[A-Z]/.test(password),
+                /[0-9]/.test(password),
+                /[^A-Za-z0-9]/.test(password)
+            ];
+
+            checks.forEach((check, index) => {
+                if (check) {
+                    strength++;
+                    requirements[index].classList.add('met');
+                    requirements[index].querySelector('i').className = 'fas fa-check-circle';
+                } else {
+                    requirements[index].classList.remove('met');
+                    requirements[index].querySelector('i').className = 'fas fa-circle';
+                }
+            });
+
+            const strengthPercentage = (strength / 4) * 100;
+            strengthMeter.style.width = `${strengthPercentage}%`;
+            
+            if (strength <= 2) {
+                strengthMeter.className = 'strength-weak';
+            } else if (strength === 3) {
+                strengthMeter.className = 'strength-medium';
+            } else {
+                strengthMeter.className = 'strength-strong';
+            }
+        }
+
+        inputs.forEach(input => {
+            input.addEventListener('input', updateProgress);
+            
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'scale(1.02)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
+
+        passwordInput.addEventListener('input', function() {
+            checkPasswordStrength(this.value);
+        });
+
+        confirmPasswordInput.addEventListener('input', function() {
+            if (this.value !== passwordInput.value) {
+                this.style.borderColor = '#ff6b6b';
+            } else {
+                this.style.borderColor = '#64ffda';
+            }
+        });
+    </script>
+</body>
+</html> 
